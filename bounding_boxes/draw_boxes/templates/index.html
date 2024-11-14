@@ -1,0 +1,91 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bounding Box Drawer</title>
+    <style>
+        #canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <h1>Draw Bounding Boxes</h1>
+    <form id="uploadForm" enctype="multipart/form-data">
+        <input type="file" id="imageFile" name="imageFile" accept="image/*" />
+        <button type="submit">Upload Image</button>
+    </form>
+
+    <br><br>
+
+    <canvas id="canvas" width="800" height="600"></canvas>
+    <br>
+    <button id="saveBtn">Save Bounding Boxes</button>
+
+    <script>
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+        let image = new Image();
+        let boxes = [];
+
+        // Handle file upload
+        document.getElementById("uploadForm").addEventListener("submit", function (e) {
+            e.preventDefault();
+            const formData = new FormData();
+            formData.append("imageFile", document.getElementById("imageFile").files[0]);
+
+            fetch('/upload/', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                image.src = data.image_url;
+                image.onload = () => {
+                    ctx.drawImage(image, 0, 0);
+                };
+            });
+        });
+
+        // Drawing bounding boxes
+        let drawing = false;
+        let startX, startY;
+
+        canvas.addEventListener('mousedown', (e) => {
+            drawing = true;
+            startX = e.offsetX;
+            startY = e.offsetY;
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (!drawing) return;
+            const x = e.offsetX;
+            const y = e.offsetY;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(image, 0, 0);
+            ctx.strokeRect(startX, startY, x - startX, y - startY);
+        });
+
+        canvas.addEventListener('mouseup', (e) => {
+            drawing = false;
+            boxes.push({ x1: startX, y1: startY, x2: e.offsetX, y2: e.offsetY });
+        });
+
+        // Save bounding boxes
+        document.getElementById("saveBtn").addEventListener("click", () => {
+            const imageId = 1; // Id of the image being edited
+            fetch('/save-bounding-boxes/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ boxes: boxes, image_id: imageId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert('Bounding boxes saved!');
+            });
+        });
+    </script>
+</body>
+</html>
