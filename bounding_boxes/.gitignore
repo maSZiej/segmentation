@@ -3,3 +3,4 @@
 /draw_boxes/migrations
 /draw_boxes/__pycache__
 /bounding_boxes/staticfiles
+/bounding_boxes/media

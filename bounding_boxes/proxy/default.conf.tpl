@@ -1,17 +1,16 @@
-server{
-    listen ${LISTEN_PORT}
+server {
+    listen ${LISTEN_PORT};
 
-    location /static{
-        alias/vol/static/;
+    location /static {
+        alias /vol/static/;
     }
 
-    location /static{
+    location /media {
         alias /vol/media/;
     }
 
-
     location / {
-        proxy_pass http://${APP_HOST}:${APP_PORT}
-        inculde /etc/nginx/proxy_params
+        proxy_pass http://${APP_HOST}:${APP_PORT};
+        include    /etc/nginx/proxy_params;
     }
 }
