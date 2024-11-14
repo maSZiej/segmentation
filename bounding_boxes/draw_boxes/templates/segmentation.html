@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Rysowanie maski</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <h1>Rysowanie maski na obrazie</h1>
+
+    <img src="{{ image.image.url }}" alt="Original Image" id="originalImage" style="max-width: 100%; height: auto;">
+
+    <canvas id="canvas" style="border: 1px solid black;"></canvas>
+
+    <br>
+    <button onclick="saveMask()">Zapisz maskę</button>
+
+    <script>
+        // Załaduj obraz i ustaw rozmiar canvas
+        const img = document.getElementById('originalImage');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        img.onload = function() {
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+        }
+
+        let drawing = false;
+
+        // Rozpocznij rysowanie
+        canvas.addEventListener('mousedown', function(event) {
+            drawing = true;
+            ctx.beginPath();
+            ctx.moveTo(event.offsetX, event.offsetY);
+        });
+
+        // Rysuj na canvasie
+        canvas.addEventListener('mousemove', function(event) {
+            if (drawing) {
+                ctx.lineTo(event.offsetX, event.offsetY);
+                ctx.stroke();
+            }
+        });
+
+        // Zakończ rysowanie
+        canvas.addEventListener('mouseup', function() {
+            drawing = false;
+        });
+
+        // Zapisz maskę (np. jako obraz PNG)
+        function saveMask() {
+            const maskImage = canvas.toDataURL('image/png');
+            // Możesz wysłać maskę do serwera za pomocą AJAX, np.:
+            fetch('/save_mask/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ mask_image: maskImage }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert('Maska została zapisana');
+            });
+        }
+    </script>
+</body>
+</html>
