@@ -1,0 +1,5 @@
+/env
+/bounding_boxes/__pycache__
+/draw_boxes/migrations
+/draw_boxes/__pycache__
+/bounding_boxes/staticfiles
